@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Resume Analyzer</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+
+
+  <style>
+    /* ==========================================
+   PREMIUM BLACK UI — DESIGN SYSTEM
+========================================== */
+
+    :root {
+      color-scheme: dark;
+
+      --bg: #050505;
+      --surface: #090909;
+      --panel: #0d0d0d;
+      --card: #101010;
+      --card-hover: #151515;
+
+      --green: #174b35;
+      --green-light: #247451;
+      --green-soft: rgba(36, 116, 81, .12);
+
+      --red: #541d25;
+      --red-light: #a43b49;
+      --red-soft: rgba(164, 59, 73, .12);
+
+      --grey: #777777;
+      --grey-light: #a0a0a0;
+      --border: #242424;
+
+      --text: #f0f0f0;
+      --muted: #858585;
+
+      --radius: 13px;
+      --transition: .3s cubic-bezier(.2, .7, .2, 1);
+
+      --shadow: 0 15px 40px rgba(0, 0, 0, .5);
+    }
+
+    /* ==========================================
+                      GLOBAL
+    ========================================== */
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scrollbar-width: thin;
+      scrollbar-color: #232222 #050505;
+    }
+
+    body {
+      min-height: 90vh;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+
+      background: var(--bg);
+      color: var(--text);
+
+      font-family: Cambria, Georgia, serif;
+      line-height: 1.6;
+
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font-family: Cambria, Georgia, serif;
+    }
+
+    button {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ==========================================
+   NAVBAR
+========================================== */
+
+    nav {
+      height: 68px;
+      padding: 0 30px;
+
+      
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      
+      background: rgba(5, 5, 5, 0.311);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(18px);
+      
+      border-bottom: 1px solid var(--border);
+      
+      animation: navEnter .6s ease both;
+
+      font-family: cursive;
+      letter-spacing: 5px;
+    }
+
+    .logo {
+      font-size: 23px;
+      font-weight: bold;
+      letter-spacing: 3px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .logo:hover {
+      opacity: .8;
+    }
+
+    .logo span {
+      color: #3c9593;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-links button,
+    .menu-btn {
+      padding: 9px 17px;
+
+      color: var(--text);
+      background: #101010;
+
+      border: 1px solid var(--border);
+      border-radius: 8px;
+
+      cursor: pointer;
+      font-size: 14px;
+
+      transition: var(--transition);
+    }
+
+    .nav-links button:hover,
+    .menu-btn:hover {
+      background: var(--green-soft);
+      border-color: var(--green-light);
+      color: #8cc9a8;
+      box-shadow: rgba(49, 48, 48, 0.354) 0 0 33px;
+    }
+
+    .menu-btn {
+      display: none;
+      font-size: 19px;
+    }
+
+    /* ==========================================
+   MAIN LAYOUT
+========================================== */
+
+    .layout {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+    }
+
+    /* ==========================================
+   SIDEBAR
+========================================== */
+
+    aside {
+      width: 270px;
+      min-width: 270px;
+
+      height: calc(100vh - 68px);
+
+      position: sticky;
+      top: 68px;
+
+      padding: 23px 17px;
+
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+
+      background: #080808;
+      border-right: 1px solid var(--border);
+
+      overflow-y: auto;
+
+      transition: transform .35s ease;
+    }
+
+    aside h3 {
+      font-size: 12px;
+      font-weight: normal;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+
+      color: var(--grey);
+      margin-bottom: 5px;
+    }
+
+    /* New Button */
+
+    .new-btn {
+      width: 100%;
+      padding: 12px;
+
+      background: var(--green);
+      color: #e7f4ec;
+
+      border: 1px solid #286146;
+      border-radius: 9px;
+
+      font-size: 15px;
+      font-weight: bold;
+
+      cursor: pointer;
+
+      transition: var(--transition);
+    }
+
+    .new-btn:hover {
+      background: #205a40;
+      box-shadow: 0 5px 20px rgba(23, 75, 53, .25);
+      transform: translateY(-2px);
+      color: white;
+    }
+
+    .new-btn:active {
+      transform: scale(.98);
+    }
+
+    /* History Items */
+
+    .hist-item {
+      position: relative;
+
+      padding: 12px 35px 12px 13px;
+
+      background: #0e0e0e;
+      border: 1px solid #1c1c1c;
+      border-radius: 9px;
+
+      font-size: 14px;
+      cursor: pointer;
+
+      transition: var(--transition);
+    }
+
+    .hist-item:hover {
+      background: #151515;
+      border-color: #355a45;
+      transform: translateX(3px);
+    }
+
+    .hist-item small {
+      display: block;
+      margin-top: 4px;
+
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .hist-item .del {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+
+      color: var(--grey);
+      font-size: 13px;
+
+      transition: var(--transition);
+    }
+
+    .hist-item .del:hover {
+      color: var(--red-light);
+      transform: scale(1.15);
+    }
+
+    /* Clear History */
+
+    .clear-btn {
+      margin-top: auto;
+      padding: 10px;
+
+      color: var(--muted);
+      background: transparent;
+
+      border: 1px solid var(--border);
+      border-radius: 8px;
+
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .clear-btn:hover {
+      color: #e48b91;
+      border-color: var(--red);
+      background: var(--red-soft);
+    }
+
+    /* ==========================================
+   MAIN CONTENT
+========================================== */
+
+    main {
+      flex: 1;
+      width: 100%;
+      max-width: 1200px;
+
+      padding: 40px;
+      margin: 0 auto;
+
+      animation: contentEnter .7s ease both;
+    }
+
+    /* ==========================================
+   HERO SECTION
+========================================== */
+
+    .hero {
+      text-align: center;
+      margin: 15px 0 42px;
+
+      animation: contentEnter .8s ease both;
+    }
+
+    .hero h1 {
+      font-size: clamp(28px, 4vw, 43px);
+      font-weight: bold;
+      letter-spacing: -.8px;
+
+      color: #f4f4f4;
+      margin-bottom: 10px;
+    }
+
+    .hero p {
+      max-width: 600px;
+      margin: auto;
+
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    /* ==========================================
+   GRID
+========================================== */
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,
+          minmax(220px, 1fr));
+
+      gap: 18px;
+    }
+
+    /* ==========================================
+   PROFESSIONAL CARDS
+========================================== */
+
+    .card {
+      position: relative;
+      overflow: hidden;
+
+      padding: 25px;
+
+      background: linear-gradient(145deg,
+          #111111,
+          #090909);
+
+      border: 1px solid #242424;
+      border-radius: var(--radius);
+
+      cursor: pointer;
+
+      transition:
+        transform .35s ease,
+        border-color .35s ease,
+        background .35s ease,
+        box-shadow .35s ease;
+
+      animation: cardEnter .65s ease both;
+    }
+
+    /* Subtle shine */
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+
+      background: linear-gradient(115deg,
+          transparent 20%,
+          rgba(255, 255, 255, .035) 50%,
+          transparent 80%);
+
+      transform: translateX(-120%);
+      transition: transform .7s ease;
+      pointer-events: none;
+    }
+
+    .card:hover::before {
+      transform: translateX(120%);
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+
+      background: #131313;
+      border-color: #365a46;
+
+      box-shadow:
+        0 15px 35px rgba(0, 0, 0, .4),
+        0 0 20px rgba(23, 75, 53, .08);
+    }
+
+    .card .ic {
+      display: inline-block;
+
+      font-size: 34px;
+      margin-bottom: 15px;
+
+      filter: grayscale(35%);
+      transition: transform .35s ease;
+    }
+
+    .card:hover .ic {
+      transform: translateY(-4px) scale(1.08);
+      filter: grayscale(0%);
+    }
+
+    .card h3 {
+      margin-bottom: 8px;
+      font-size: 19px;
+      color: #eeeeee;
+    }
+
+    .card p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    /* ==========================================
+   HIDDEN AND BACK BUTTON
+========================================== */
+
+    .hidden {
+      display: none !important;
+    }
+
+    .back {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+
+      background: transparent;
+      border: none;
+
+      color: #75b18e;
+      font-size: 15px;
+      font-weight: bold;
+
+      cursor: pointer;
+      margin-bottom: 22px;
+
+      transition: var(--transition);
+    }
+
+    .back:hover {
+      color: #a1d4b4;
+      transform: translateX(-5px);
+    }
+
+    /* ==========================================
+   TOOL BOX
+========================================== */
+
+    .tool-box {
+      padding: 30px;
+
+      background: #0c0c0c;
+
+      border: 1px solid #252525;
+      border-radius: 14px;
+
+      box-shadow: var(--shadow);
+
+      animation: contentEnter .45s ease both;
+    }
+
+    .tool-box h2 {
+      font-size: 25px;
+      margin-bottom: 20px;
+      color: #f0f0f0;
+    }
+
+    /* ==========================================
+   INPUTS AND FORMS
+========================================== */
+
+    label {
+      display: block;
+
+      margin: 16px 0 7px;
+
+      color: #a0a0a0;
+      font-size: 14px;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+
+      padding: 12px 14px;
+
+      color: #eeeeee;
+      background: #070707;
+
+      border: 1px solid #292929;
+      border-radius: 8px;
+
+      font-size: 15px;
+
+      transition: var(--transition);
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #666666;
+    }
+
+    input:hover,
+    textarea:hover,
+    select:hover {
+      border-color: #454545;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+
+      border-color: #387052;
+
+      box-shadow: 0 0 0 3px rgba(36, 116, 81, .12);
+
+      background: #0b100d;
+    }
+
+    textarea {
+      min-height: 115px;
+      resize: vertical;
+      line-height: 1.7;
+    }
+
+    select {
+      cursor: pointer;
+    }
+
+    /* ==========================================
+   PRIMARY BUTTON
+========================================== */
+
+    .go {
+      margin-top: 20px;
+
+      padding: 12px 25px;
+
+      color: #eaf5ed;
+      background: #174b35;
+
+      border: 1px solid #286146;
+      border-radius: 8px;
+
+      font-size: 15px;
+      font-weight: bold;
+
+      cursor: pointer;
+
+      transition: var(--transition);
+    }
+
+    .go:hover:not(:disabled) {
+      background: #226044;
+      transform: translateY(-2px);
+
+      box-shadow: 0 8px 20px rgba(23, 75, 53, .22);
+    }
+
+    .go:active:not(:disabled) {
+      transform: scale(.98);
+    }
+
+    .go:disabled {
+      opacity: .55;
+      cursor: wait;
+    }
+
+    /* ==========================================
+   RESULT SECTION
+========================================== */
+
+    .result {
+      margin-top: 25px;
+
+      padding: 25px;
+
+      background: #070707;
+
+      border: 1px solid #242424;
+      border-radius: 11px;
+
+      font-size: 15px;
+      line-height: 1.85;
+
+      overflow-wrap: anywhere;
+
+      animation: contentEnter .5s ease both;
+    }
+
+    .result h1,
+    .result h2,
+    .result h3 {
+      margin: 17px 0 9px;
+      color: #e8e8e8;
+    }
+
+    .result p {
+      margin: 9px 0;
+    }
+
+    .result ul,
+    .result ol {
+      margin-left: 24px;
+    }
+
+    .result pre {
+      max-width: 100%;
+      overflow-x: auto;
+    }
+
+    .result img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+
+    .error {
+      color: #d96b76;
+    }
+
+    /* ==========================================
+   VIDEO CARDS
+========================================== */
+
+    .vid-grid {
+      display: grid;
+
+      grid-template-columns: repeat(auto-fit,
+          minmax(250px, 1fr));
+
+      gap: 17px;
+    }
+
+    .vid {
+      display: block;
+
+      color: inherit;
+      text-decoration: none;
+
+      background: #101010;
+
+      border: 1px solid #242424;
+      border-radius: 11px;
+
+      overflow: hidden;
+
+      transition: var(--transition);
+    }
+
+    .vid:hover {
+      transform: translateY(-5px);
+      border-color: var(--red);
+      box-shadow: 0 10px 25px rgba(84, 29, 37, .12);
+    }
+
+    .thumb {
+      height: 145px;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      font-size: 40px;
+
+      background: linear-gradient(135deg,
+          #171010,
+          #101010);
+
+      transition: var(--transition);
+    }
+
+    .vid:hover .thumb {
+      background: #1b1011;
+    }
+
+    .vid div.t {
+      padding: 15px;
+    }
+
+    .vid b {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 16px;
+    }
+
+    .vid span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    /* ==========================================
+   FOOTER
+========================================== */
+
+    footer {
+      padding: 18px;
+
+      text-align: center;
+
+      color: #777777;
+      font-size: 13px;
+
+      background: #080808;
+      border-top: 1px solid #202020;
+    }
+
+    /* ==========================================
+   SCROLLBAR
+========================================== */
+
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #050505;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #333333;
+      border-radius: 20px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555555;
+    }
+
+    /* ==========================================
+   ANIMATIONS
+========================================== */
+
+    @keyframes navEnter {
+      from {
+        opacity: 0;
+        transform: translateY(-12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes contentEnter {
+      from {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes cardEnter {
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ==========================================
+   TABLET
+========================================== */
+
+    @media (max-width: 900px) {
+      aside {
+        width: 240px;
+        min-width: 240px;
+      }
+
+      main {
+        padding: 28px 20px;
+      }
+    }
+
+    /* ==========================================
+   MOBILE
+========================================== */
+
+    @media (max-width: 800px) {
+
+      nav {
+        height: 62px;
+        padding: 0 15px;
+      }
+
+      .logo {
+        font-size: 20px;
+      }
+
+      .menu-btn {
+        display: block;
+      }
+
+      aside {
+        position: fixed;
+
+        top: 62px;
+        left: 0;
+
+        width: min(285px, 85vw);
+        min-width: unset;
+
+        height: calc(100dvh - 62px);
+
+        z-index: 200;
+
+        background: #090909;
+
+        box-shadow: 15px 0 35px rgba(0, 0, 0, .5);
+
+        transform: translateX(-105%);
+      }
+
+      aside.open {
+        transform: translateX(0);
+      }
+
+      main {
+        padding: 25px 16px;
+      }
+
+      .hero {
+        margin: 10px 0 30px;
+      }
+
+      .hero h1 {
+        font-size: 30px;
+      }
+
+      .hero p {
+        font-size: 14px;
+      }
+
+      .tool-box {
+        padding: 21px;
+      }
+    }
+
+    /* ==========================================
+   SMALL MOBILE
+========================================== */
+
+    @media (max-width: 480px) {
+
+      nav {
+        padding: 0 12px;
+      }
+
+      .logo {
+        font-size: 18px;
+      }
+
+      .nav-links {
+        gap: 5px;
+      }
+
+      .nav-links button,
+      .menu-btn {
+        padding: 8px 10px;
+        font-size: 12px;
+      }
+
+      main {
+        padding: 22px 13px;
+      }
+
+      .hero h1 {
+        font-size: 27px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+        gap: 13px;
+      }
+
+      .card {
+        padding: 20px;
+      }
+
+      .card h3 {
+        font-size: 18px;
+      }
+
+      .tool-box {
+        padding: 17px;
+      }
+
+      .tool-box h2 {
+        font-size: 21px;
+      }
+
+      .result {
+        padding: 16px;
+        font-size: 14px;
+      }
+
+      .go {
+        width: 100%;
+      }
+
+      .vid-grid {
+        grid-template-columns: 1fr;
+      }
+
+      footer {
+        padding: 15px 10px;
+      }
+    }
+
+    /* ==========================================
+   ACCESSIBILITY
+========================================== */
+
+    button:focus-visible,
+    a:focus-visible,
+    .card:focus-visible {
+      outline: 2px solid #43835f;
+      outline-offset: 3px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      *,
+      *::before,
+      *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+      }
+    }
+  </style>
+
+</head>
+
+<body>
+
+<nav>
+  <div class="logo" onclick="goHome()">🧠 My <span>Resume</span> Analyzer</div>
+  <div class="nav-links">
+    <button onclick="goHome()">Home</button>
+    <button class="menu-btn" onclick="document.getElementById('side').classList.toggle('open')">☰ History</button>
+  </div>
+</nav>
+
+<div class="layout">
+  <aside id="side">
+    <button class="new-btn" onclick="goHome()">+ Start New</button>
+    <h3>Previous Chats</h3>
+    <div id="history"></div>
+    <button class="clear-btn" onclick="clearHistory()">Clear History</button>
+  </aside>
+
+  <main>
+    <!-- HOME -->
+    <section id="home">
+      <div class="hero">
+        <h1>Welcome to My Resume Analyzer 😊</h1>
+        <p>Select any tool below to get started</p>
+      </div>
+      <div class="grid" id="cards"></div>
+    </section>
+
+    <!-- TOOL VIEW -->
+    <section id="tool" class="hidden">
+      <button class="back" onclick="goHome()">← Go Back</button>
+      <div class="tool-box">
+        <h2 id="tool-title"></h2>
+        <form id="tool-form" onsubmit="submitTool(event)">
+          <div id="fields"></div>
+          <button class="go" id="go-btn" type="submit">Submit</button>
+        </form>
+        <div id="result" class="result hidden"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+
+  <!-- <footer>© 2026 AI Resume Analyzer · FastAPI + Groq · Vishal Full Stack Develop</footer> -->
+
+  <script>
+    const TOOLS = {
+      resume: {
+        icon: "📄", title: "Resume Analyze", desc: "PDF resume upload karo, score + improvements pao.",
+        endpoint: "/api/analyze", btn: "Analyze Resume",
+        fields: [
+          { name: "resume", label: "Resume (PDF)", type: "file", accept: ".pdf", required: true },
+          { name: "role", label: "Target Role (optional)", type: "text", placeholder: "e.g. Python Developer" }
+        ]
+      },
+      ask: {
+        icon: "💬", title: "Ask Questions About Job", desc: "Kisi bhi job, skill ya salary ke baare me pucho.",
+        endpoint: "/api/ask", btn: "Ask",
+        fields: [
+          { name: "role", label: "Job / Role (optional)", type: "text", placeholder: "e.g. Data Analyst" },
+          { name: "question", label: "Your Question", type: "textarea", required: true, placeholder: "e.g. Fresher ko kaunse skills chahiye?" }
+        ]
+      },
+      roadmap: {
+        icon: "🗺️", title: "Making Roadmap for Any Role", desc: "Kisi bhi role ka step-by-step learning roadmap.",
+        endpoint: "/api/roadmap", btn: "Generate Roadmap",
+        fields: [
+          { name: "role", label: "Role", type: "text", required: true, placeholder: "e.g. Full Stack Developer" },
+          { name: "level", label: "Current Level", type: "select", options: ["Beginner", "Intermediate", "Advanced"] },
+          { name: "months", label: "Time (months)", type: "select", options: ["3", "6", "9", "12"] }
+        ]
+      },
+      youtube: {
+        icon: "▶️", title: "YouTube Videos for Interview", desc: "Interview prep ke liye best video ideas + links.",
+        endpoint: "/api/youtube", btn: "Find Videos",
+        fields: [
+          { name: "topic", label: "Topic / Role", type: "text", required: true, placeholder: "e.g. Python interview questions" }
+        ]
+      }
+    };
+
+    let current = null;
+    const $ = id => document.getElementById(id);
+    const getHistory = () => JSON.parse(localStorage.getItem("ra_history") || "[]");
+    const setHistory = h => localStorage.setItem("ra_history", JSON.stringify(h));
+
+    // ---------- Home cards ----------
+    $("cards").innerHTML = Object.entries(TOOLS).map(([k, t]) =>
+      `<div class="card" onclick="openTool('${k}')">
+     <div class="ic">${t.icon}</div><h3>${t.title}</h3><p>${t.desc}</p>
+   </div>`).join("");
+
+    function goHome() {
+      current = null;
+      $("tool").classList.add("hidden");
+      $("home").classList.remove("hidden");
+      $("side").classList.remove("open");
+    }
+
+    function openTool(key) {
+      current = key;
+      const t = TOOLS[key];
+      $("home").classList.add("hidden");
+      $("tool").classList.remove("hidden");
+      $("tool-title").textContent = t.icon + " " + t.title;
+      $("go-btn").textContent = t.btn;
+      $("result").classList.add("hidden");
+      $("result").innerHTML = "";
+      $("fields").innerHTML = t.fields.map(f => {
+        let input = "";
+        if (f.type === "textarea")
+          input = `<textarea name="${f.name}" placeholder="${f.placeholder || ""}" ${f.required ? "required" : ""}></textarea>`;
+        else if (f.type === "select")
+          input = `<select name="${f.name}">${f.options.map(o => `<option>${o}</option>`).join("")}</select>`;
+        else
+          input = `<input type="${f.type}" name="${f.name}" placeholder="${f.placeholder || ""}" ${f.accept ? `accept="${f.accept}"` : ""} ${f.required ? "required" : ""}>`;
+        return `<label>${f.label}</label>${input}`;
+      }).join("");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // ---------- Submit ----------
+    async function submitTool(e) {
+      e.preventDefault();
+      const t = TOOLS[current];
+      const form = e.target;
+      const fd = new FormData(form);
+      const btn = $("go-btn");
+      btn.disabled = true; btn.textContent = "Thinking...";
+      const box = $("result");
+      box.classList.remove("hidden");
+      box.innerHTML = "⏳ AI soch raha hai...";
+
+      // human-readable input summary for history
+      const summary = [...fd.entries()].map(([k, v]) => v instanceof File ? v.name : v).filter(Boolean).join(" · ");
+
+      try {
+        const res = await fetch(t.endpoint, { method: "POST", body: fd });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Something went wrong");
+        renderResult(current, data);
+        saveHistory({ id: Date.now(), tool: current, input: summary, data, time: new Date().toLocaleString() });
+      } catch (err) {
+        box.innerHTML = `<p class="error">❌ ${err.message}</p>`;
+      } finally {
+        btn.disabled = false; btn.textContent = t.btn;
+      }
+    }
+
+    function renderResult(tool, data) {
+      const box = $("result");
+      box.classList.remove("hidden");
+      if (tool === "youtube") {
+        box.innerHTML = `<div class="vid-grid">` + (data.videos || []).map(v =>
+          `<a class="vid" href="${v.url}" target="_blank" rel="noopener">
+         <div class="thumb">▶️</div>
+         <div class="t"><b>${escapeHtml(v.title)}</b><span>${escapeHtml(v.why || "")}</span></div>
+       </a>`).join("") + `</div>`;
+      } else {
+        box.innerHTML = marked.parse(data.result || "");
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+
+    // ---------- History ----------
+    function saveHistory(item) {
+      const h = getHistory();
+      h.unshift(item);
+      setHistory(h.slice(0, 50));
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const h = getHistory();
+      $("history").innerHTML = h.length ? h.map(i =>
+        `<div class="hist-item" onclick="openHistory(${i.id})">
+       <span class="del" onclick="event.stopPropagation();deleteHistory(${i.id})">✕</span>
+       ${TOOLS[i.tool].icon} <b>${TOOLS[i.tool].title}</b>
+       <small>${escapeHtml((i.input || "").slice(0, 40))}</small>
+       <small>${i.time}</small>
+     </div>`).join("") : `<p style="color:var(--muted);font-size:13px">Abhi koi history nahi.</p>`;
+    }
+
+    function openHistory(id) {
+      const item = getHistory().find(i => i.id === id);
+      if (!item) return;
+      openTool(item.tool);
+      renderResult(item.tool, item.data);
+      $("side").classList.remove("open");
+    }
+
+    function deleteHistory(id) {
+      setHistory(getHistory().filter(i => i.id !== id));
+      renderHistory();
+    }
+
+    function clearHistory() {
+      if (confirm("Saari history delete karni hai?")) { setHistory([]); renderHistory(); }
+    }
+
+    renderHistory();
+  </script>
+</body>
+
+</html>
