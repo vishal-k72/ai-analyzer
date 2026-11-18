@@ -66,27 +66,102 @@ def home():
 
 @app.post("/api/analyze")
 async def analyze(resume: UploadFile = File(...), role: str = Form("")):
+
     if not (resume.filename or "").lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Sirf PDF upload karo.")
+
     text = read_pdf(await resume.read())
-    target = f"Target role: {role}" if role.strip() else "No specific target role given."
-    system = "You are an expert resume reviewer and career coach. Reply in clear Markdown."
-    user = f"""{target}
 
-Resume text:
-\"\"\"
-{text}
-\"\"\"
+    # Step 1: Check whether uploaded document is a resume
+    validation_system = """
+    You are a strict document classifier.
 
-Give:
-## Overall Score (out of 100) with one-line reason
-## Strengths
-## Weaknesses / Gaps
-## Missing Keywords & Skills (for the role)
-## ATS Tips
-## Improvement Suggestions (specific, actionable bullets)
-## Suggested Rewrite of Summary (3-4 lines)"""
+    Your task is to identify whether the provided document
+    is a resume or CV.
+
+    A resume usually contains information such as:
+    - Name and contact details
+    - Education
+    - Work experience or internships
+    - Skills
+    - Projects
+    - Certifications
+
+    Return ONLY valid JSON:
+    {"is_resume": true}
+    or
+    {"is_resume": false}
+
+    Important:
+    - A document must actually be a resume or CV.
+    - Do not consider ordinary notes, stories, books,
+      assignments or articles as resumes.
+    - If uncertain, return false.
+    """
+
+    validation_user = f"""
+    Check whether this document is a resume or CV.
+
+    Document:
+    {text[:5000]}
+    """
+
+    raw_validation = ask_llm(
+        validation_system,
+        validation_user,
+        json_mode=True
+    )
+
+    try:
+        validation = json.loads(raw_validation)
+        is_resume = validation.get("is_resume", False)
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="Document validation failed. Please try again."
+        )
+
+    # Step 2: Reject non-resume documents
+    if not is_resume:
+        return {
+            "result": (
+                "This document does not appear to be a resume. "
+                "Please upload only your resume PDF to use the Resume Analyzer."
+            )
+        }
+
+    # Step 3: Analyze valid resume
+    target = (
+        f"Target role: {role}"
+        if role.strip()
+        else "No specific target role given."
+    )
+
+    system = """
+    You are an expert resume reviewer and career coach.
+    Reply in clear Markdown.
+    """
+
+    user = f"""
+    {target}
+
+    Resume text:
+    \"\"\"
+    {text}
+    \"\"\"
+
+    Give:
+    ## Overall Score (out of 100) with one-line reason
+    ## Strengths
+    ## Weaknesses / Gaps
+    ## Missing Keywords & Skills (for the role)
+    ## ATS Tips
+    ## Improvement Suggestions (specific, actionable bullets)
+    ## Suggested Rewrite of Summary (3-4 lines)
+    """
+
     return {"result": ask_llm(system, user)}
+    
 
 
 @app.post("/api/ask")
